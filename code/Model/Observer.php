@@ -22,34 +22,43 @@ class Aoe_Static_Model_Observer
     public function processPreDispatch(Varien_Event_Observer $observer)
     {
 
-        $helper = Mage::helper('aoestatic'); /* @var $helper Aoe_Static_Helper_Data */
-        $event = $observer->getEvent(); /* @var $event Varien_Event */
-        $controllerAction = $event->getControllerAction(); /* @var $controllerAction Mage_Core_Controller_Varien_Action */
+        /* @var $helper Aoe_Static_Helper_Data */
+        $helper = Mage::helper('aoestatic'); 
+        /* @var $event Varien_Event */
+        $event = $observer->getEvent(); 
+        /* @var $controllerAction Mage_Core_Controller_Varien_Action */
+        $controllerAction = $event->getControllerAction(); 
         $fullActionName = $controllerAction->getFullActionName();
 
         $lifetime = $helper->isCacheableAction($fullActionName);
 
-        $response = $controllerAction->getResponse(); /* @var $response Mage_Core_Controller_Response_Http */
+        /* @var $response Mage_Core_Controller_Response_Http */
+        $response = $controllerAction->getResponse(); 
         if ($lifetime) {
             // allow caching
-            $response->setHeader('X-Magento-Lifetime', $lifetime, true); // Only for debugging and information
+            // Only for debugging and information
+            $response->setHeader('X-Magento-Lifetime', $lifetime, true); 
             $response->setHeader('Cache-Control', 'max-age='. $lifetime, true);
             $response->setHeader('aoestatic', 'cache', true);
         } else {
             // do not allow caching
-            $cookie = Mage::getModel('core/cookie'); /* @var $cookie Mage_Core_Model_Cookie */
+            /* @var $cookie Mage_Core_Model_Cookie */
+            $cookie = Mage::getModel('core/cookie'); 
 
             $name = '';
             $loggedIn = false;
-            $session = Mage::getSingleton('customer/session'); /* @var $session Mage_Customer_Model_Session  */
+            /* @var $session Mage_Customer_Model_Session  */
+            $session = Mage::getSingleton('customer/session'); 
             if ($session->isLoggedIn()) {
                 $loggedIn = true;
                 $name = $session->getCustomer()->getName();
             }
-            $response->setHeader('X-Magento-LoggedIn', $loggedIn ? '1' : '0', true); // Only for debugging and information
+            // Only for debugging and information
+            $response->setHeader('X-Magento-LoggedIn', $loggedIn ? '1' : '0', true); 
             $cookie->set('aoestatic_customername', $name, '3600', '/');
         }
-        $response->setHeader('X-Magento-Action', $fullActionName, true); // Only for debugging and information
+        // Only for debugging and information
+        $response->setHeader('X-Magento-Action', $fullActionName, true); 
 
         return $this;
     }
@@ -138,8 +147,12 @@ class Aoe_Static_Model_Observer
         }
         if (array_key_exists($name, $this->customerBlocks)) {
             $placholder = '<div class="placeholder" rel="%s">%s</div>';
-            Mage::log('cms_block'.$this->customerBlocks[$name]);
-            $cmsHtml = Mage::getBlockSingleton('cms/block')->setBlockId($this->customerBlocks[$name])->toHtml();
+            $cmsHtml = '';
+            if ($this->customerBlocks[$name]) {
+                $block = Mage::getBlockSingleton('cms/block')
+                    ->setBlockId($this->customerBlocks[$name]);
+                $cmsHtml = $block->toHtml();
+            }
             $observer->getTransport()->setHtml(sprintf($placholder, $name, $cmsHtml));
         }
     }

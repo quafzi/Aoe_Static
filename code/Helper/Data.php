@@ -36,9 +36,14 @@ class Aoe_Static_Helper_Data extends Mage_Core_Helper_Abstract
         }
         $cacheActionsString = Mage::getStoreConfig('system/aoe_static/cache_actions');
         foreach (explode(',', $cacheActionsString) as $singleActionConfiguration) {
-            list($actionName, $lifeTime) = explode(';', $singleActionConfiguration);
-            if (trim($actionName) == $fullActionName) {
-                return intval(trim($lifeTime));
+            if (trim($singleActionConfiguration)) {
+                $config = explode(';', $singleActionConfiguration);
+                list($actionName, $lifeTime) = sizeof($config) >= 2
+                    ? $config
+                    : array($config[0], 86400);
+                if (trim($actionName) == $fullActionName) {
+                    return intval(trim($lifeTime));
+                }
             }
         }
         return false;
@@ -56,12 +61,8 @@ class Aoe_Static_Helper_Data extends Mage_Core_Helper_Abstract
         $customerBlocks = array();
         foreach($blocks as $block) {
             $block = explode(';', $block);
-            if (sizeof($block) == 2) {
-                $customerBlocks[trim($block[0])] = trim($block[1]);
-            } else {
-                $customerBlocks[trim($block[0])] = "";
-            }
-
+            $customerBlocks[trim($block[0])] = sizeof($block) > 1
+                ? trim($block[1]) : '';
         }
         return array_filter($customerBlocks);
     }
@@ -77,7 +78,7 @@ class Aoe_Static_Helper_Data extends Mage_Core_Helper_Abstract
         if (!$this->isActive()) {
             return false;
         }
-        return !$this->isAjaxCallback() and $this->isCacheableAction();
+        return $this->isCacheableAction();
     }
 
     /**
