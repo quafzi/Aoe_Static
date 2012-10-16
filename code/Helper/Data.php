@@ -152,32 +152,49 @@ class Aoe_Static_Helper_Data extends Mage_Core_Helper_Abstract
         $mh = curl_multi_init();
         $syncronPurge = Mage::getStoreConfig('system/aoe_static/purge_syncroniously');
         $autoRebuild = Mage::getStoreConfig('system/aoe_static/auto_rebuild_cache');
+        $purgeHosts = Mage::getStoreConfig('system/aoe_static/purge_hosts');
 
-        foreach ($urls as $url) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, ''.$url);
-            if ($syncronPurge || !$autoRebuild) {
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PURGE');
-            } else {
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        $purgeHosts = array_filter(array_map('trim', explode('\n', $purgeHosts))));
+
+        $purgeHosts = $purgeHosts ? $purgeHosts : Mage::app()->getBaseUrl();
+
+        foreach ($purgeHosts as $purgeHost) {
+          foreach ($urls as $url) {
+              $components = parse_url('' . $url);
+              $ch = curl_init();
+              $this->log('Purge url: ' . $url);
+              $options = array(
+                CURLOPT_URL => $purgeHost . $components['path'],
+              );
+
+              if ($syncronPurge || !$autoRebuild) {
+                  $options[CURLOPT_CUSTOMREQUEST] = 'PURGE';
+                  $options[CURLOPT_HTTPHEADER] = array( 'Host: ' . $components['host'] );
+              } else {
+                  $options[CURLOPT_HTTPHEADER] = array(
                     "Cache-Control: no-cache",
                     "Pragma: no-cache"
-                ));
-            }
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                  );
+              }
+              $options[CURLOPT_RETURNTRANSFER] = 1;
+              $options[CURLOPT_SSL_VERIFYPEER] = 0;
+              $options[CURLOPT_SSL_VERIFYHOST] = 0;
+              curl_setopt_array($ch, $options);
 
-            curl_multi_add_handle($mh, $ch);
-            $curlRequests[] = array(
-                'handler' => $ch,
-                'url' => $url
-            );
+              curl_multi_add_handle($mh, $ch);
+              $curlRequests[] = array(
+                  'handler' => $ch,
+                  'url' => $url
+              );
+              $this->log('Info about curlRequests', compact('options'));
+          }
         }
 
         do {
             $n = curl_multi_exec($mh, $active);
         } while ($active);
+
+        $this->log('cUrl multi handle info', curl_multi_info_read($mh));
 
         // Error handling and clean up
         foreach ($curlRequests as $request) {
@@ -195,14 +212,29 @@ class Aoe_Static_Helper_Data extends Mage_Core_Helper_Abstract
                 );
             } else {
                 if ($request['url'] instanceof Aoe_Static_Model_Url) {
-                    #$request['url']->delete();
+                    $request['url']->delete();
                 }
             }
+            $this->log( 'cUrl info', $info );
             curl_multi_remove_handle($mh, $ch);
             curl_close($ch);
         }
         curl_multi_close($mh);
 
+        if (count($errors) > 0)
+        {
+          $this->log('Errors occured while purging.', compact('urls', 'errors'));
+        }
+
         return $errors;
+    }
+
+    protected function log( $message, $params = null )
+    {
+      if (!is_null($params))
+      {
+        $message = print_r(compact('message', 'params'), 1);
+      }
+      Mage::log($message, null, 'aoestatic.' . date('Y-m-d') . '.log');
     }
 }
