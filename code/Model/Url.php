@@ -10,6 +10,12 @@ class Aoe_Static_Model_Url extends Mage_Core_Model_Abstract
     {
         return $this->getUrl();
     }
+
+    public function getHelper()
+    {
+        return Mage::helper('aoestatic');
+    }
+
     /**
      * Finds url given by path, if not in db, creates it
      *
@@ -27,6 +33,13 @@ class Aoe_Static_Model_Url extends Mage_Core_Model_Abstract
         } else {
             $url->setPurgePrio(null);
         }
+
+        $lifetime = $this->getHelper()->isCacheableAction();
+        $expire = date(
+            'Y-m-d H:i:s', 
+            strtotime(sprintf('+ %d seconds', $lifetime))
+        );
+        $url->setExpire($expire);
         $url->save();
         return $url;
     }
@@ -90,6 +103,17 @@ class Aoe_Static_Model_Url extends Mage_Core_Model_Abstract
             )
             ->group('main_table.url_id');
         return $urls;
+    }
+
+    /**
+     * Get expired urls
+     *
+     * @return Aoe_Static_Model_Resource_Url_Collection
+     */
+    public function getExpiredUrls()
+    {
+        return Mage::getResourceModel('aoestatic/url_collection')
+            ->addFieldToFilter('expire', array('lteq' => date("Y-m-d H:i:s")));
     }
 
     /**

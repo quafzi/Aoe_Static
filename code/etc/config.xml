@@ -3,7 +3,7 @@
 
     <modules>
         <Aoe_Static>
-            <version>0.1.0</version>
+            <version>0.2.0</version>
         </Aoe_Static>
     </modules>
 
@@ -169,9 +169,12 @@ cart.sidebar]]>
             </aoe_static>
         </system>
     </default>
-    <!-- temporärer cron zum cache leeren nach bestandsabgleich - nur verwendet bis async leeren umgesetzt -->
     <crontab>
         <jobs>
+            <delete_expired>
+                <schedule><cron_expr>*/5 * * * *</cron_expr></schedule>
+                <run><model>aoestatic/cache::removeExpiredUrls</model></run>
+            </delete_expired>
             <purge_varnish>
                 <schedule><cron_expr>*/5 * * * *</cron_expr></schedule>
                 <run><model>aoestatic/cache::processPurge</model></run>

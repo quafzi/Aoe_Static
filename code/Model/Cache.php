@@ -206,7 +206,7 @@ class Aoe_Static_Model_Cache
             if (!empty($errors)) {
                 $msg = $helper->__(
                     "Some Varnish purges failed: %s",
-                    $this->getListHtml($errors)
+                    self::getListHtml($errors)
                 );
                 Mage::getSingleton('adminhtml/session')->addError($msg);
             } else {
@@ -218,6 +218,29 @@ class Aoe_Static_Model_Cache
         return $this;
     }
 
+    /**
+     * generates ul-html list of given array
+     * 
+     * @param Array(string) $list 
+     * @return string
+     */
+    protected static function getListHtml($list)
+    {
+        return '<ul><li>' . implode('</li><li>', $list) . '</li></ul>';
+    }
+
+    /**
+     * This method is used by the cron to clean up expired url entries
+     *
+     * @return void
+     */
+    public function removeExpiredUrls()
+    {
+        $urls = Mage::getModel('aoestatic/url')->getExpiredUrls();
+        foreach ($urls as $url) {
+            $url->delete();
+        }
+    }
     /**
      * This method is used by the cron to trigger purges by priority
      *

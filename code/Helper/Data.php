@@ -56,7 +56,12 @@ class Aoe_Static_Helper_Data extends Mage_Core_Helper_Abstract
         $customerBlocks = array();
         foreach($blocks as $block) {
             $block = explode(';', $block);
-            $customerBlocks[trim($block[0])] = trim($block[1]);
+            if (sizeof($block) == 2) {
+                $customerBlocks[trim($block[0])] = trim($block[1]);
+            } else {
+                $customerBlocks[trim($block[0])] = "";
+            }
+
         }
         return array_filter($customerBlocks);
     }
