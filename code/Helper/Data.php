@@ -156,7 +156,7 @@ class Aoe_Static_Helper_Data extends Mage_Core_Helper_Abstract
 
         $purgeHosts = array_filter(array_map('trim', explode('\n', $purgeHosts)));
 
-        $purgeHosts = $purgeHosts ? $purgeHosts : Mage::app()->getBaseUrl();
+        $purgeHosts = $purgeHosts ? $purgeHosts : array(Mage::app()->getBaseUrl());
 
         foreach ($purgeHosts as $purgeHost) {
           foreach ($urls as $url) {
@@ -164,17 +164,15 @@ class Aoe_Static_Helper_Data extends Mage_Core_Helper_Abstract
               $ch = curl_init();
               $this->log('Purge url: ' . $url);
               $options = array(
-                CURLOPT_URL => $purgeHost . $components['path'],
+                  CURLOPT_URL => $purgeHost . $components['path'],
+                  CURLOPT_HTTPHEADER => array('Host: ' . $components['host'])
               );
 
               if ($syncronPurge || !$autoRebuild) {
                   $options[CURLOPT_CUSTOMREQUEST] = 'PURGE';
-                  $options[CURLOPT_HTTPHEADER] = array( 'Host: ' . $components['host'] );
               } else {
-                  $options[CURLOPT_HTTPHEADER] = array(
-                    "Cache-Control: no-cache",
-                    "Pragma: no-cache"
-                  );
+                  $options[CURLOPT_HTTPHEADER][] = "Cache-Control: no-cache";
+                  $options[CURLOPT_HTTPHEADER][] = "Pragma: no-cache";
               }
               $options[CURLOPT_RETURNTRANSFER] = 1;
               $options[CURLOPT_SSL_VERIFYPEER] = 0;

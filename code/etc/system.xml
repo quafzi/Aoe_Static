@@ -31,8 +31,7 @@
                         </cache_actions>
                         <purge_hosts translate="label">
                             <label>Hosts to purge</label>
-                            <comment><![CDATA[Enter the IPs of the varnish servers where the purge requests should be posted on. Seperated by linebreaks. Leave empty to use store url.]]>
-                            </comment>
+                            <comment><![CDATA[Enter the IPs of the varnish servers where the purge requests should be posted on. Seperated by linebreaks. Leave empty to use store url.]]></comment>
                             <frontend_type>textarea</frontend_type>
                             <sort_order>250</sort_order>
                             <show_in_default>1</show_in_default>
