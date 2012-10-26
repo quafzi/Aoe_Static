@@ -53,11 +53,18 @@ class Aoe_Static_Model_Url extends Mage_Core_Model_Abstract
     public function setTags($tags)
     {
         $this->deleteExistingTags();
+        $savedTagsIds = array();
+
         foreach ($tags as $tag) {
+            // avoid duplicates
+            if (in_array($tag->getId(), $savedTagsIds)) {
+                continue;
+            }
             $urlTag = Mage::getModel('aoestatic/urltag')
                 ->setUrlId($this->getId())
                 ->setTagId($tag->getId());
             $urlTag->save();
+            $savedTagsIds[] = $tag->getId();
         }
         return $this;
     }
@@ -69,9 +76,11 @@ class Aoe_Static_Model_Url extends Mage_Core_Model_Abstract
      */
     protected function deleteExistingTags()
     {
-        $urlTags = Mage::getModel('aoestatic/urltag')->getCollection()
+        $collection = Mage::getModel('aoestatic/urltag')->getCollection()
             ->addFieldToFilter('url_id', $this->getId());
-        foreach ($urlTags as $tag) {
+        // the followng should work according docs but it doesn't
+        // $collection->delete();
+        foreach($collection as $tag) {
             $tag->delete();
         }
         return $this;

@@ -238,6 +238,7 @@ class Aoe_Static_Model_Cache
     {
         $urls = Mage::getModel('aoestatic/url')->getExpiredUrls();
         foreach ($urls as $url) {
+            $url->deleteExistingTags();
             $url->delete();
         }
     }
