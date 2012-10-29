@@ -23,4 +23,8 @@ magento folder. See the modman file to get the relations.
 The module adds a new entry into you cache list. Enable the Varnish-Cache there.
 Also there is a configuration section under Advanced -> System -> Varnish Configuration.
 
+## How to support?
 
+* Fork + Pull Requests
+* File Bugs
+* [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=cmx66&url=https://github.com/StephanHoyer/Aoe_Static&title=Aoe_Static&language=&tags=github&category=software)
