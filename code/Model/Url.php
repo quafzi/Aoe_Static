@@ -53,18 +53,16 @@ class Aoe_Static_Model_Url extends Mage_Core_Model_Abstract
     public function setTags($tags)
     {
         $this->deleteExistingTags();
-        $savedTagsIds = array();
 
         foreach ($tags as $tag) {
-            // avoid duplicates
-            if (in_array($tag->getId(), $savedTagsIds)) {
-                continue;
-            }
             $urlTag = Mage::getModel('aoestatic/urltag')
                 ->setUrlId($this->getId())
                 ->setTagId($tag->getId());
-            $urlTag->save();
-            $savedTagsIds[] = $tag->getId();
+            try {
+                $urlTag->save();
+            } catch (Exception $e) {
+                // ignore duplicate url tag combination
+            }
         }
         return $this;
     }

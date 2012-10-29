@@ -156,7 +156,7 @@ class Aoe_Static_Helper_Data extends Mage_Core_Helper_Abstract
 
         $purgeHosts = array_filter(array_map('trim', explode('\n', $purgeHosts)));
 
-        $purgeHosts = $purgeHosts ? $purgeHosts : array(Mage::app()->getBaseUrl());
+        $purgeHosts = $purgeHosts ? $purgeHosts : array(Mage::getBaseUrl());
 
         foreach ($purgeHosts as $purgeHost) {
           foreach ($urls as $url) {
